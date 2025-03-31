@@ -1,5 +1,5 @@
 // src/services/api.ts
- /* eslint-disable */
+/* eslint-disable */
 import axios, { AxiosResponse } from 'axios';
 
 // API 기본 URL 설정 - 현재 프록시 사용 ,추후 로컬환경 탈피시 수정
@@ -109,23 +109,35 @@ export class ApiService {
   // 운송사 목록 조회
   static async getCarriers(): Promise<CarrierResponse[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/carriers`, {
+      const response = await fetch(`/api/carriers`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       console.log('API Response Status:', response.status);
+
+      if (!response.ok) {
+        console.error('API error:', response.status);
+        return []; // 오류 시 빈 배열 반환
+      }
+
       const data = await response.json();
       console.log('API Response Data:', data);
-      
+
       // 응답 구조에 따라 적절히 처리
-      return Array.isArray(data) ? data : (data.carriers || []);
+      if (Array.isArray(data)) {
+        return data;
+      } else if (data && Array.isArray(data.carriers)) {
+        return data.carriers;
+      } else {
+        console.warn('Unexpected API response format:', data);
+        return [];
+      }
     } catch (error) {
       console.error('Error fetching carriers:', error);
-      // 오류가 발생해도 빈 배열 반환
-      return [];
+      return []; // 오류가 발생해도 빈 배열 반환
     }
   }
 
@@ -185,7 +197,7 @@ export class ApiService {
   }
 
   // S3 직접 업로드를 위한 사전 서명된 URL 가져오기
-  static async getPresignedUrl(fileName: string, contentType: string): Promise<{url: string, fileKey: string}> {
+  static async getPresignedUrl(fileName: string, contentType: string): Promise<{ url: string, fileKey: string }> {
     try {
       const response: AxiosResponse<{ url: string, fileKey: string }> = await apiClient.post('/upload/presigned', {
         fileName,
@@ -217,10 +229,10 @@ export class ApiService {
     try {
       // 1. 사전 서명된 URL 요청
       const { url, fileKey } = await this.getPresignedUrl(file.name, file.type);
-      
+
       // 2. 사전 서명된 URL로 직접 업로드
       await this.uploadFileToS3(url, file);
-      
+
       return { fileKey };
     } catch (error) {
       console.error('Error uploading file:', error);
