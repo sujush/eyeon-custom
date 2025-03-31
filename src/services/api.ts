@@ -228,15 +228,17 @@ export class ApiService {
   static async uploadFile(file: File): Promise<{ fileKey: string }> {
     try {
       // 1. 사전 서명된 URL 요청
-      const { url, fileKey } = await this.getPresignedUrl(file.name, file.type);
+      // 'this.getPresignedUrl' 대신 'ApiService.getPresignedUrl' 사용
+      const { url, fileKey } = await ApiService.getPresignedUrl(file.name, file.type);
 
       // 2. 사전 서명된 URL로 직접 업로드
-      await this.uploadFileToS3(url, file);
+      // 'this.uploadFileToS3' 대신 'ApiService.uploadFileToS3' 사용 (일관성을 위해)
+      await ApiService.uploadFileToS3(url, file);
 
       return { fileKey };
     } catch (error) {
-      console.error('Error uploading file:', error);
-      throw error;
+      console.error('Error uploading file:', error); // 여기에서 에러가 잡히고 있음
+      throw error; // 에러를 다시 던져서 상위에서 처리할 수 있도록 함
     }
   }
 
