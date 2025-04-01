@@ -56,8 +56,9 @@ export async function handler(
 
     console.log('event.path:', event.path);
     console.log('event.resource:', event.resource);
+    console.log('event.httpMethod:', event.httpMethod);
 
-    
+
     if (
       event.httpMethod === 'GET' &&
       (event.path?.includes('extract-preview') || event.resource?.includes('extract-preview'))
