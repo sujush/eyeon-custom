@@ -53,8 +53,14 @@ export async function handler(
 
   try {
     // 미리보기 추출 API 처리
-    if (event.httpMethod === 'GET' && event.path && event.path.includes('/excel/extract-preview')
+
+    console.log('event.path:', event.path);
+    console.log('event.resource:', event.resource);
+
     
+    if (
+      event.httpMethod === 'GET' &&
+      (event.path?.includes('extract-preview') || event.resource?.includes('extract-preview'))
     ) {
       console.log("Handling extract-preview request.");
       const queryParams = event.queryStringParameters || {};
