@@ -54,20 +54,20 @@ export async function handler(
   try {
     // 미리보기 추출 API 처리
 
-    console.log('event.path:', event.path);
-    console.log('event.resource:', event.resource);
-    console.log('event.httpMethod:', event.httpMethod);
+    console.log('event.path:', event.path); // 실제: "/prod/excel/extract-preview"
+    console.log('event.resource:', event.resource); // "/excel/extract-preview"
 
 
     if (
       event.httpMethod === 'GET' &&
-      (event.path?.includes('extract-preview') || event.resource?.includes('extract-preview'))
+      event.resource === '/excel/extract-preview'
     ) {
       console.log("Handling extract-preview request.");
       const queryParams = event.queryStringParameters || {};
       console.log("Query Parameters:", JSON.stringify(queryParams));
+    
       const { fileKey, templateId, carrierId } = queryParams;
-      
+    
       if (!fileKey || !templateId || !carrierId) {
         console.error("Missing query parameters: fileKey, templateId, or carrierId.");
         return {
