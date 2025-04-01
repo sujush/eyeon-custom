@@ -22,7 +22,6 @@ import {
   getCarriers,
   getTemplatesByCarrier,
   uploadFile,
-  processFile,
 } from '../services/api';
 
 interface Carrier {
