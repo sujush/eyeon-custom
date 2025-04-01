@@ -45,26 +45,16 @@ interface ProcessFileResponse {
   pendingCompanies: CompanyResult[];
 }
 
-interface ExtendedAPIGatewayProxyEvent extends APIGatewayProxyEvent {
-  rawPath?: string;
-}
-
 export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
-  const extendedEvent = event as ExtendedAPIGatewayProxyEvent;
   // 로그: 전체 이벤트 객체 출력
   console.log("Received event:", JSON.stringify(event, null, 2));
 
   try {
     // 미리보기 추출 API 처리
-    if (
-      extendedEvent.httpMethod === 'GET' &&
-      (
-        (extendedEvent.path && extendedEvent.path.includes('/excel/extract-preview')) ||
-        (extendedEvent.resource && extendedEvent.resource.includes('/excel/extract-preview')) ||
-        (extendedEvent.rawPath && extendedEvent.rawPath.includes('/excel/extract-preview'))
-      )
+    if (event.httpMethod === 'GET' && event.path && event.path.includes('/excel/extract-preview')
+    
     ) {
       console.log("Handling extract-preview request.");
       const queryParams = event.queryStringParameters || {};
