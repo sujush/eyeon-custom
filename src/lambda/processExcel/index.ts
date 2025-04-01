@@ -277,7 +277,7 @@ export async function handler(
 
 // 제품 정보 추출 함수 - 비동기 함수로 변경
 async function extractProductInfo(
-  worksheet: XLSX.IWorkSheet,
+  worksheet: XLSX.WorkSheet,
   templateInfo: TemplateInfo,
   companyId?: string
 ): Promise<ProductInfo[]> {
@@ -331,7 +331,7 @@ async function extractProductInfo(
 
 // 엑셀에 HS 코드 업데이트 함수
 async function updateExcelWithHSCodes(
-  workbook: XLSX.IWorkBook,
+  workbook: XLSX.WorkBook,
   companies: CompanyResult[],
   templateInfo: TemplateInfo
 ): Promise<void> {
