@@ -18,9 +18,9 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { 
-  getCarriers, 
-  getTemplatesByCarrier, 
+import {
+  getCarriers,
+  getTemplatesByCarrier,
   uploadFile,
   processFile,
 } from '../services/api';
@@ -37,7 +37,7 @@ interface Template {
 
 export default function HomePage() {
   const router = useRouter();
-  
+
   const [carriers, setCarriers] = useState<Carrier[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedCarrier, setSelectedCarrier] = useState('');
@@ -46,11 +46,11 @@ export default function HomePage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     loadCarriers();
   }, []);
-  
+
   useEffect(() => {
     if (selectedCarrier) {
       loadTemplates(selectedCarrier);
@@ -59,7 +59,7 @@ export default function HomePage() {
       setSelectedTemplate('');
     }
   }, [selectedCarrier]);
-  
+
   const loadCarriers = async () => {
     try {
       const response = await getCarriers(); // response: CarrierResponse[]
@@ -73,7 +73,7 @@ export default function HomePage() {
       setError('운송사 정보를 불러오는데 실패했습니다.');
     }
   };
-  
+
   const loadTemplates = async (carrierId: string) => {
     try {
       const response = await getTemplatesByCarrier(carrierId);
@@ -87,21 +87,21 @@ export default function HomePage() {
       setError('양식 정보를 불러오는데 실패했습니다.');
     }
   };
-  
+
   const handleCarrierChange = (event: SelectChangeEvent<string>) => {
     setSelectedCarrier(event.target.value);
   };
-  
+
   const handleTemplateChange = (event: SelectChangeEvent<string>) => {
     setSelectedTemplate(event.target.value);
   };
-  
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const fileList = Array.from(event.target.files);
       const excelFiles = fileList.filter(
         file => file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-               file.type === 'application/vnd.ms-excel'
+          file.type === 'application/vnd.ms-excel'
       );
       if (excelFiles.length !== fileList.length) {
         setError('엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.');
@@ -109,64 +109,47 @@ export default function HomePage() {
       setFiles(excelFiles);
     }
   };
-  
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!selectedCarrier || !selectedTemplate || files.length === 0) {
       setError('모든 필드를 입력해주세요.');
       return;
     }
-    
+
     setUploading(true);
     setError(null);
-    
+
     try {
-      const uploadResults = await Promise.all(
-        files.map(async (file) => {
-          const uploadResult = await uploadFile(file);
-          return {
-            originalName: file.name,
-            fileKey: uploadResult.fileKey,
-          };
-        })
-      );
-      
-      const processResults = await Promise.all(
-        uploadResults.map(async (result) => {
-          return await processFile({
-            fileKey: result.fileKey,
-            templateId: selectedTemplate,
-            carrierId: selectedCarrier,
-          });
-        })
-      );
-      
-      if (processResults.length > 0) {
-        router.push(`/upload-result?resultKey=${processResults[0].resultFileKey}`);
-      }
+      // 파일 업로드 (첫 번째 파일만 검증)
+      const file = files[0];
+      const uploadResult = await uploadFile(file);
+
+      // 검증 페이지로 이동
+      router.push(`/verify-upload?fileKey=${uploadResult.fileKey}&templateId=${selectedTemplate}&carrierId=${selectedCarrier}`);
     } catch (error) {
-      console.error('Error processing files:', error);
-      setError('파일 처리 중 오류가 발생했습니다.');
+      console.error('Error uploading file:', error);
+      setError('파일 업로드 중 오류가 발생했습니다.');
     } finally {
       setUploading(false);
       setUploadProgress(0);
     }
   };
-  
+
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         HS 코드 자동화 시스템
       </Typography>
-      
+
       <Paper sx={{ p: 4 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
             <FormControl fullWidth>
@@ -184,7 +167,7 @@ export default function HomePage() {
                 ))}
               </Select>
             </FormControl>
-            
+
             <FormControl fullWidth>
               <InputLabel>양식 선택</InputLabel>
               <Select
@@ -200,7 +183,7 @@ export default function HomePage() {
                 ))}
               </Select>
             </FormControl>
-            
+
             <Box>
               <input
                 type="file"
@@ -222,7 +205,7 @@ export default function HomePage() {
                   엑셀 파일 선택 {files.length > 0 && `(${files.length}개 선택됨)`}
                 </Button>
               </label>
-              
+
               {files.length > 0 && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2">선택된 파일:</Typography>
@@ -236,7 +219,7 @@ export default function HomePage() {
                 </Box>
               )}
             </Box>
-            
+
             <Button
               type="submit"
               variant="contained"

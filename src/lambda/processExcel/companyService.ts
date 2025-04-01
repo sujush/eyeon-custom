@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Company } from '../../types/database-types';
 
 const dynamoDB = new DynamoDB.DocumentClient();
-const COMPANIES_TABLE = process.env.COMPANIES_TABLE || 'Companies_1';
+const COMPANIES_TABLE = process.env.COMPANIES_TABLE || 'Companies';
 export interface CompanyData {
   companyId: string;
   companyNameEN: string;

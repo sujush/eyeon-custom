@@ -17,13 +17,21 @@ interface ProductVariant { HSCode: string; VariantAttributes?: Record<string, st
 interface Product { CompanyID: string; SK: string; ProductName: string; variants: ProductVariant[]; }
 interface Template { TemplateID: string; CarrierID: string; TemplateName: string; ProductColumn: string; HSCodeColumn: string; CompanyNameRow: number; CompanyNameColumn: string; StartRow: number; }
 // interface Carrier { CarrierID: string; CarrierName: string; Templates: Template[]; } // Carrier 인터페이스가 사용되지 않으면 제거 가능
-interface ProcessFileRequest { fileKey: string; templateId: string; carrierId: string; }
 export interface ProcessFileResponse { resultFileKey: string; pendingCompanies: CompanyResult[]; }
 export interface CompanyResult { companyNameEN: string; companyNameKR: string; companyId?: string; isNew: boolean; products: ProductInfo[]; }
 export interface ProductInfo { productName: string; rowIndex: number; hsCode?: string; hasMultipleHSCodes?: boolean; variants?: { hsCode: string; attributes?: Record<string, string>; }[]; }
 export interface UpdateCompanyRequest { companyNameEN: string; companyNameKR: string; products: { productName: string; hsCode: string; variantAttributes?: Record<string, string>; }[]; }
 export interface SelectProductHsCodesRequest { companyId: string; products: { productName: string; selectedHsCode: string; }[]; }
 interface CarrierResponse { id: string; name: string; }
+interface ProcessFileRequest {
+  fileKey: string;
+  templateId: string;
+  carrierId: string;
+  verifiedData?: {
+    companyName: string;
+    firstProductName: string;
+  };
+}
 // --- 인터페이스 정의 끝 ---
 
 // API 서비스 클래스
@@ -41,8 +49,8 @@ export class ApiService {
         console.error('[ERROR][ApiService] getCarriers - API error status:', response.status);
         // 에러 응답 본문 로깅 시도
         try {
-            const errorBody = await response.text(); // text()는 항상 성공
-            console.error('[ERROR][ApiService] getCarriers - API error body:', errorBody);
+          const errorBody = await response.text(); // text()는 항상 성공
+          console.error('[ERROR][ApiService] getCarriers - API error body:', errorBody);
         } catch (e) { /* ignore */ }
         return [];
       }
@@ -69,8 +77,8 @@ export class ApiService {
       console.error(`[ERROR][ApiService] Error fetching templates for carrier ${carrierId}:`, error);
       // Axios 에러 상세 로깅 추가
       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -86,9 +94,9 @@ export class ApiService {
       return response.data.products;
     } catch (error) {
       console.error('[ERROR][ApiService] Error fetching products:', error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -103,9 +111,9 @@ export class ApiService {
       return response.data.product;
     } catch (error) {
       console.error('[ERROR][ApiService] Error adding product:', error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -113,16 +121,16 @@ export class ApiService {
 
   // --- 제품 업데이트 ---
   static async updateProduct(productId: string, updates: Partial<Product>): Promise<Product> {
-      console.log(`[DEBUG][ApiService] Entering updateProduct for productId: ${productId}`); // 로그 추가
+    console.log(`[DEBUG][ApiService] Entering updateProduct for productId: ${productId}`); // 로그 추가
     try {
       const response: AxiosResponse<{ product: Product }> = await apiClient.put(`/products/${productId}`, updates);
       console.log(`[INFO][ApiService] Product updated successfully: ${productId}`); // 성공 로그 추가
       return response.data.product;
     } catch (error) {
       console.error(`[ERROR][ApiService] Error updating product ${productId}:`, error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -130,15 +138,15 @@ export class ApiService {
 
   // --- 제품 삭제 ---
   static async deleteProduct(productId: string): Promise<void> {
-      console.log(`[DEBUG][ApiService] Entering deleteProduct for productId: ${productId}`); // 로그 추가
+    console.log(`[DEBUG][ApiService] Entering deleteProduct for productId: ${productId}`); // 로그 추가
     try {
       await apiClient.delete(`/products/${productId}`);
       console.log(`[INFO][ApiService] Product deleted successfully: ${productId}`); // 성공 로그 추가
     } catch (error) {
       console.error(`[ERROR][ApiService] Error deleting product ${productId}:`, error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -157,9 +165,9 @@ export class ApiService {
       return response.data;
     } catch (error) {
       console.error('[ERROR][ApiService] Error getting presigned URL:', error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -219,20 +227,18 @@ export class ApiService {
     }
   }
 
-
-  // --- 엑셀 파일 처리 요청 ---
+  // processFile 함수 수정
   static async processFile(request: ProcessFileRequest): Promise<ProcessFileResponse> {
-    console.log(`[DEBUG][ApiService] Entering processFile for fileKey: ${request.fileKey}`); // 로그 추가
+    console.log(`[DEBUG][ApiService] Entering processFile for fileKey: ${request.fileKey}`);
     try {
       const response: AxiosResponse<ProcessFileResponse> = await apiClient.post('/excel/process', request);
-      console.log(`[INFO][ApiService] processFile call successful for fileKey: ${request.fileKey}`); // 성공 로그 추가
-      // console.log(`[DEBUG][ApiService] processFile response data:`, response.data); // 결과 데이터 로그 (필요시)
+      console.log(`[INFO][ApiService] processFile call successful for fileKey: ${request.fileKey}`);
       return response.data;
     } catch (error) {
       console.error(`[ERROR][ApiService] Error processing file ${request.fileKey}:`, error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -248,9 +254,9 @@ export class ApiService {
     } catch (error) {
       // 이전 로그에서 이 부분 에러(403)가 확인되었음
       console.error(`[ERROR][ApiService] Error getting process result for ${resultKey}:`, error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data); // 403 에러 시 응답 본문 확인 중요
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status); // 403 상태 코드 확인
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data); // 403 에러 시 응답 본문 확인 중요
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status); // 403 상태 코드 확인
       }
       throw error;
     }
@@ -258,15 +264,15 @@ export class ApiService {
 
   // --- 업체 정보 업데이트 ---
   static async updateCompanyInfo(request: UpdateCompanyRequest): Promise<void> {
-      console.log(`[DEBUG][ApiService] Entering updateCompanyInfo for company: ${request.companyNameEN}`); // 로그 추가
+    console.log(`[DEBUG][ApiService] Entering updateCompanyInfo for company: ${request.companyNameEN}`); // 로그 추가
     try {
       await apiClient.post('/companies/update', request);
       console.log(`[INFO][ApiService] updateCompanyInfo call successful for company: ${request.companyNameEN}`); // 성공 로그 추가
     } catch (error) {
       console.error(`[ERROR][ApiService] Error updating company info for ${request.companyNameEN}:`, error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }
@@ -274,15 +280,15 @@ export class ApiService {
 
   // --- 제품 HS 코드 선택 ---
   static async selectProductHsCodes(request: SelectProductHsCodesRequest): Promise<void> {
-      console.log(`[DEBUG][ApiService] Entering selectProductHsCodes for companyId: ${request.companyId}`); // 로그 추가
+    console.log(`[DEBUG][ApiService] Entering selectProductHsCodes for companyId: ${request.companyId}`); // 로그 추가
     try {
       await apiClient.post('/products/select-hs-codes', request);
       console.log(`[INFO][ApiService] selectProductHsCodes call successful for companyId: ${request.companyId}`); // 성공 로그 추가
     } catch (error) {
       console.error(`[ERROR][ApiService] Error selecting product HS codes for companyId ${request.companyId}:`, error);
-       if (isAxiosError(error)) {
-          console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
-          console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
+      if (isAxiosError(error)) {
+        console.error('[ERROR][ApiService] Axios error response:', error.response?.data);
+        console.error('[ERROR][ApiService] Axios error status:', error.response?.status);
       }
       throw error;
     }

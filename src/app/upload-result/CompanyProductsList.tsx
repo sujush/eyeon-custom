@@ -1,4 +1,5 @@
-'use client';  // Next.js 13 이상이라면 필요
+//src/app/upload-result/CompanyProductList.tsx
+'use client'
 
 import React, { useState } from 'react';
 import {
@@ -15,12 +16,15 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
-
-// Material UI v7에서는 Grid 대신 Box를 사용하여 유사한 레이아웃 구현
+import AddIcon from '@mui/icons-material/Add';
 import { CompanyResult, ProductInfo, UpdateCompanyRequest } from '../../services/api';
 
-// 이 컴포넌트가 받아야 할 props 정의
 interface CompanyProductsListProps {
   company: CompanyResult;
   onUpdateCompany: (data: UpdateCompanyRequest) => Promise<void>;
@@ -38,6 +42,11 @@ export const CompanyProductsList: React.FC<CompanyProductsListProps> = ({
     company.products
   );
 
+  // 신규 HS 코드 추가를 위한 상태
+  const [isAddHsCodeDialogOpen, setIsAddHsCodeDialogOpen] = useState(false);
+  const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
+  const [newHsCode, setNewHsCode] = useState('');
+
   // HS 코드 직접 입력
   const handleHsCodeChange = (index: number, value: string) => {
     const updated = [...products];
@@ -50,6 +59,39 @@ export const CompanyProductsList: React.FC<CompanyProductsListProps> = ({
     const updated = [...products];
     updated[index] = { ...updated[index], hsCode };
     setProducts(updated);
+  };
+
+  // 신규 HS 코드 추가 다이얼로그 열기
+  const handleOpenAddHsCodeDialog = (index: number) => {
+    setSelectedProductIndex(index);
+    setNewHsCode('');
+    setIsAddHsCodeDialogOpen(true);
+  };
+
+  // 신규 HS 코드 추가
+  const handleAddNewHsCode = () => {
+    if (selectedProductIndex === null || !newHsCode.trim()) return;
+
+    const updated = [...products];
+    const product = updated[selectedProductIndex];
+
+    // 기존 variants가 없으면 생성
+    if (!product.variants) {
+      product.variants = [];
+    }
+
+    // 기존 HS 코드가 있으면 variants에 추가
+    if (product.hsCode && !product.variants.some(v => v.hsCode === product.hsCode)) {
+      product.variants.push({ hsCode: product.hsCode });
+    }
+
+    // 새 HS 코드 추가
+    product.variants.push({ hsCode: newHsCode });
+    product.hasMultipleHSCodes = true;
+    product.hsCode = newHsCode; // 새로 추가한 코드를 현재 선택된 코드로 설정
+
+    setProducts(updated);
+    setIsAddHsCodeDialogOpen(false);
   };
 
   // 저장 버튼
@@ -111,7 +153,6 @@ export const CompanyProductsList: React.FC<CompanyProductsListProps> = ({
         {products.map((product, index) => (
           <React.Fragment key={`${product.productName}-${index}`}>
             <ListItem sx={{ py: 2 }}>
-              {/* Grid 대신 Flexbox 기반 Box 사용 */}
               <Box sx={{ width: '100%' }}>
                 <Box 
                   sx={{ 
@@ -127,7 +168,13 @@ export const CompanyProductsList: React.FC<CompanyProductsListProps> = ({
                   </Box>
 
                   {/* HS 코드 영역 */}
-                  <Box sx={{ width: { xs: '100%', md: '66.666%' } }}>
+                  <Box sx={{ 
+                    width: { xs: '100%', md: '60%' },
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
                     {/* 여러 가지 HS 코드를 가질 수 있는 경우 */}
                     {product.hasMultipleHSCodes && product.variants ? (
                       <FormControl fullWidth>
@@ -161,6 +208,15 @@ export const CompanyProductsList: React.FC<CompanyProductsListProps> = ({
                         required
                       />
                     )}
+                    
+                    {/* 새 HS 코드 추가 버튼 */}
+                    <IconButton 
+                      color="primary" 
+                      onClick={() => handleOpenAddHsCodeDialog(index)}
+                      title="새 HS 코드 추가"
+                    >
+                      <AddIcon />
+                    </IconButton>
                   </Box>
                 </Box>
               </Box>
@@ -175,6 +231,25 @@ export const CompanyProductsList: React.FC<CompanyProductsListProps> = ({
           저장
         </Button>
       </Box>
+
+      {/* 새 HS 코드 추가 다이얼로그 */}
+      <Dialog open={isAddHsCodeDialogOpen} onClose={() => setIsAddHsCodeDialogOpen(false)}>
+        <DialogTitle>새 HS 코드 추가</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="새 HS 코드"
+            fullWidth
+            value={newHsCode}
+            onChange={(e) => setNewHsCode(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsAddHsCodeDialogOpen(false)}>취소</Button>
+          <Button onClick={handleAddNewHsCode} color="primary">추가</Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };
