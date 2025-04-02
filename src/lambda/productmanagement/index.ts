@@ -102,21 +102,21 @@ async function getCarriers(): Promise<APIGatewayProxyResult> {
     const params = {
       TableName: CARRIERS_TABLE
     };
-    
+
     const result = await dynamoDB.scan(params).promise();
-    
+
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         ...corsHeaders
       },
-      // 템플릿 데이터를 { templates: [...] } 형태로 JSON.stringify하여 반환
-      body: JSON.stringify({ templates: result.Items || [] })
+      // carriers 데이터를 단순 배열로 반환
+      body: JSON.stringify(result.Items || [])
     };
   } catch (error) {
     console.error('Error fetching carriers:', error);
-    
+
     return {
       statusCode: 500,
       headers: corsHeaders,
@@ -139,20 +139,21 @@ async function getTemplatesByCarrier(carrierId: string): Promise<APIGatewayProxy
         ':carrierId': carrierId
       }
     };
-    
+
     const result = await dynamoDB.query(params).promise();
-    
+
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         ...corsHeaders
       },
-      body: JSON.stringify(result.Items || [])
+      // 템플릿 데이터를 { templates: [...] } 형태로 반환
+      body: JSON.stringify({ templates: result.Items || [] })
     };
   } catch (error) {
     console.error('Error fetching templates:', error);
-    
+
     return {
       statusCode: 500,
       headers: corsHeaders,
