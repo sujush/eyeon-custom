@@ -93,7 +93,7 @@ export class LambdaFunctionStack extends cdk.Stack {
         RESULT_BUCKET: props.resultBucket.bucketName,
       },
       bundling: {
-        externalModules: ['aws-sdk'],
+        //externalModules: ['aws-sdk'],
         minify: true,
         sourceMap: true,
       },
