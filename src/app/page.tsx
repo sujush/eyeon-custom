@@ -84,17 +84,23 @@ export default function HomePage() {
   const loadTemplates = async (carrierId: string) => {
     try {
       const response = await getTemplatesByCarrier(carrierId);
+      console.log('Templates API Response:', response);
+      
+      // 응답이 항상 배열이므로 바로 매핑
       const mappedTemplates: Template[] = response.map((template) => ({
         templateId: template.TemplateID,
         templateName: template.TemplateName,
       }));
+      
+      console.log('Mapped Templates:', mappedTemplates);
       setTemplates(mappedTemplates);
     } catch (error) {
-      console.error('Error loading templates:', error);
+      console.error('Error loading templates:', error instanceof Error ? error.message : String(error));
+      setTemplates([]);
       setError('양식 정보를 불러오는데 실패했습니다.');
     }
   };
-
+  
   const handleCarrierChange = (event: SelectChangeEvent<string>) => {
     setSelectedCarrier(event.target.value);
   };
