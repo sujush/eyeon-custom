@@ -21,7 +21,7 @@ export class InfraStack extends cdk.Stack {
       productsTable: dbStack.productsTable,
       carriersTable: dbStack.carriersTable,
       templatesTable: dbStack.templatesTable,
-      companiesTable: dbStack.companiesTable, // 추가한 부분이 반영되지 않았음
+      companiesTable: dbStack.companiesTable, 
       uploadBucket: s3Stack.uploadBucket,
       resultBucket: s3Stack.resultBucket,
     });
