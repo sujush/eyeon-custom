@@ -24,7 +24,9 @@ import {
   getCarriers,
   getTemplatesByCarrier,
   uploadFile,
+  CarrierResponse
 } from '../services/api';
+
 
 interface Carrier {
   carrierId: string;
@@ -63,11 +65,15 @@ export default function HomePage() {
 
   const loadCarriers = async () => {
     try {
-      const response = await getCarriers(); // 이제 response는 CarrierApiResponse[] 타입으로 추론될 수 있음
-      const mappedCarriers: Carrier[] = response.map((carrier: CarrierApiResponse) => ({ // any 대신 CarrierApiResponse 사용
+      const response = await getCarriers();
+      console.log('API Response:', response); // 디버깅용 로그
+  
+      const mappedCarriers: Carrier[] = response.map((carrier: CarrierResponse) => ({
         carrierId: carrier.CarrierID,
         carrierName: carrier.CarrierName,
       }));
+  
+      console.log('Mapped Carriers:', mappedCarriers);
       setCarriers(mappedCarriers);
     } catch (error) {
       console.error('Error loading carriers:', error);
