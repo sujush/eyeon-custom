@@ -1,7 +1,6 @@
 /* eslint-disable */
 import axios, { AxiosResponse, isAxiosError } from 'axios'; // isAxiosError 임포트 추가
 
-// API 기본 URL 설정 - 현재 프록시 사용 ,추후 로컬환경 탈피시 수정
 const API_BASE_URL = '/api';
 
 // API 클라이언트 인스턴스 생성
