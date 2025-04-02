@@ -111,7 +111,8 @@ async function getCarriers(): Promise<APIGatewayProxyResult> {
         'Content-Type': 'application/json',
         ...corsHeaders
       },
-      body: JSON.stringify(result.Items || [])
+      // 템플릿 데이터를 { templates: [...] } 형태로 JSON.stringify하여 반환
+      body: JSON.stringify({ templates: result.Items || [] })
     };
   } catch (error) {
     console.error('Error fetching carriers:', error);
