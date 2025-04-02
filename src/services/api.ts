@@ -1,6 +1,8 @@
 /* eslint-disable */
 import axios, { AxiosResponse, isAxiosError } from 'axios'; // isAxiosError 임포트 추가
 
+
+
 const API_BASE_URL = '/api';
 
 // API 클라이언트 인스턴스 생성
@@ -21,7 +23,11 @@ export interface CompanyResult { companyNameEN: string; companyNameKR: string; c
 export interface ProductInfo { productName: string; rowIndex: number; hsCode?: string; hasMultipleHSCodes?: boolean; variants?: { hsCode: string; attributes?: Record<string, string>; }[]; }
 export interface UpdateCompanyRequest { companyNameEN: string; companyNameKR: string; products: { productName: string; hsCode: string; variantAttributes?: Record<string, string>; }[]; }
 export interface SelectProductHsCodesRequest { companyId: string; products: { productName: string; selectedHsCode: string; }[]; }
-interface CarrierResponse { id: string; name: string; }
+export interface CarrierResponse {
+  CarrierID: string; // <--- 이렇게 수정
+  CarrierName: string; // <--- 이렇게 수정
+  CreatedAt: string;
+}
 interface ProcessFileRequest {
   fileKey: string;
   templateId: string;
@@ -31,6 +37,7 @@ interface ProcessFileRequest {
     firstProductName: string;
   };
 }
+
 // --- 인터페이스 정의 끝 ---
 
 // API 서비스 클래스

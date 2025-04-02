@@ -63,19 +63,11 @@ export default function HomePage() {
 
   const loadCarriers = async () => {
     try {
-      // getCarriers() API가 반환하는 실제 타입을 사용하는 것이 더 좋습니다.
-      // 예를 들어 API 서비스 파일에 CarrierResponse 타입을 정의하세요.
-      // const response: CarrierResponse[] = await getCarriers();
-      const response = await getCarriers(); // 임시로 any 사용하거나, 실제 타입 사용
-
-      // --- ✨ 수정된 매핑 ---
-      const mappedCarriers: Carrier[] = response.map((carrier: any) => ({ // 필요시 carrier 타입 명시
-        carrierId: carrier.CarrierID,     // 'id' -> 'CarrierID' 로 변경
-        carrierName: carrier.CarrierName, // 'name' -> 'CarrierName' 으로 변경
+      const response = await getCarriers(); // 이제 response는 CarrierApiResponse[] 타입으로 추론될 수 있음
+      const mappedCarriers: Carrier[] = response.map((carrier: CarrierApiResponse) => ({ // any 대신 CarrierApiResponse 사용
+        carrierId: carrier.CarrierID,
+        carrierName: carrier.CarrierName,
       }));
-      // --------------------
-
-      console.log('Mapped Carriers:', mappedCarriers); // 데이터가 올바르게 매핑되었는지 확인용 로그
       setCarriers(mappedCarriers);
     } catch (error) {
       console.error('Error loading carriers:', error);
